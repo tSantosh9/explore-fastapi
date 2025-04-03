@@ -2,7 +2,8 @@ from typing import Annotated
 from fastapi import FastAPI, Query
 from pydantic import AfterValidator
 
-from model.employee import Employee
+from model.employee import Employee, Image
+from model.department import Department
 
 app = FastAPI()
 
@@ -33,3 +34,36 @@ async def read_employees():
 @app.post("/employees/")
 async def create_employee(employee: Employee):
     return {"emp_id": employee.emp_id, "first_name": employee.first_name, "last_name": employee.last_name, "email": employee.email}
+
+@app.put("/employees/{emp_id}")
+async def update_employee(
+        emp_id: Annotated[str, AfterValidator(check_valid_employee_id)],
+        employee: Employee):
+    return {"emp_id": emp_id, "first_name": employee.first_name, "last_name": employee.last_name, "email": employee.email}
+
+# Multiple body parameters
+@app.put("/employees/department/")
+async def map_department(
+        department: Department,
+        employee: Employee):
+    return {
+        "dept_id": department.dept_id,
+        "dept_name": department.dept_name,
+        "emp_id": employee.emp_id,
+        "first_name": employee.first_name,
+        "last_name": employee.last_name,
+        "email": employee.email
+    }
+
+# Request Body - Nested Models
+@app.put("/employees/{emp_id}/photo_signature/")
+async def upload_photo_signature(
+        emp_id: Annotated[str, AfterValidator(check_valid_employee_id)],
+        employee: Employee):
+    return {
+        "emp_id": emp_id,
+        "first_name": employee.first_name,
+        "last_name": employee.last_name,
+        "email": employee.email,
+        "images": employee.images
+    }
