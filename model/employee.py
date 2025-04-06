@@ -13,3 +13,13 @@ class Employee(BaseModel):
     dept_id: str = Field(default=None)
     # Making it optional
     images: list[Image] = Field(default=None)
+
+
+class UserIn(BaseModel):
+    user_id: str
+    user_name: str
+    password: str
+
+class UserOut(BaseModel):
+    user_id: str
+    user_name: str

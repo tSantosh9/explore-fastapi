@@ -1,8 +1,8 @@
-from typing import Annotated
+from typing import Annotated, Any
 from fastapi import FastAPI, Query
 from pydantic import AfterValidator
 
-from model.employee import Employee, Image
+from model.employee import Employee, Image, UserIn, UserOut
 from model.department import Department
 
 app = FastAPI()
@@ -67,3 +67,12 @@ async def upload_photo_signature(
         "email": employee.email,
         "images": employee.images
     }
+
+# Response Model - Return type
+# The response models help ensure that the data returned by your API adheres to the expected format, 
+# improving code readability and providing automatic validation and documentation generation.
+# If you declare both a return type and a response_model, the response_model will take priority and be used by FastAPI.
+# Here the UserOut model doesn't contian password field, pydantic will automatically remove it
+@app.post("/user/", response_model=UserOut)
+async def add_user(user: UserIn) -> Any:
+    return user
