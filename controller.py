@@ -1,5 +1,6 @@
 from typing import Annotated, Any
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException, status, Request
+from fastapi.responses import JSONResponse
 from pydantic import AfterValidator
 
 from model.employee import Employee, Image, UserIn, UserOut
@@ -68,6 +69,17 @@ async def upload_photo_signature(
         "images": employee.images
     }
 
+# Custom Exception Handler for HTTPException
+@app.exception_handler(HTTPException)
+async def custom_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error_code" : exc.status_code,
+            "error_message" : exc.detail
+        }
+    )
+
 # Response Model - Return type
 # The response models help ensure that the data returned by your API adheres to the expected format, 
 # improving code readability and providing automatic validation and documentation generation.
@@ -75,4 +87,6 @@ async def upload_photo_signature(
 # Here the UserOut model doesn't contian password field, pydantic will automatically remove it
 @app.post("/user/", response_model=UserOut)
 async def add_user(user: UserIn) -> Any:
+    if user.user_id == "sos":
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     return user
