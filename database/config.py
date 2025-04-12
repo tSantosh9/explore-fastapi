@@ -1,0 +1,1 @@
+DB_URL = "postgresql://explore_user:explore_user@localhost:5432/exploredb?options=-csearch_path=explore"

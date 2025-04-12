@@ -2,11 +2,21 @@ from typing import Annotated, Any
 from fastapi import FastAPI, Query, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from pydantic import AfterValidator
+from sqlmodel import Session
+from contextlib import asynccontextmanager
 
 from model.employee import Employee, Image, UserIn, UserOut
 from model.department import Department
+from model.user import User
 
-app = FastAPI()
+from database import database
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    database.init_database()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 async def read_employee():
@@ -90,3 +100,12 @@ async def add_user(user: UserIn) -> Any:
     if user.user_id == "sos":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     return user
+
+
+@app.post("/user/create/", response_model=User)
+async def create_user(user: User):
+    with Session(database.engine) as session:
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+        return user
