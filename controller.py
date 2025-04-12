@@ -11,11 +11,14 @@ from model.user import User
 
 from database import database
 
+# Contextmanager will clean up the connection pool when the application is terminated
+# Initialise the database engine
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     database.init_database()
     yield
 
+# Initialise the lifespan
 app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
@@ -104,6 +107,8 @@ async def add_user(user: UserIn) -> Any:
 
 @app.post("/user/create/", response_model=User)
 async def create_user(user: User):
+    # Initialise session
+    # Session is auto-release on block exit
     with Session(database.engine) as session:
         session.add(user)
         session.commit()
